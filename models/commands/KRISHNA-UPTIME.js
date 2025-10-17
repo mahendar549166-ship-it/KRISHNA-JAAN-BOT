@@ -1,99 +1,69 @@
+const fetch = require('node-fetch');
 const os = require('os');
-const moment = require('moment-timezone');
-const fs = require('fs').promises;
-const nodeDiskInfo = require('node-disk-info');
+const fs = require('fs');
+const language = process.env.REPL_LANGUAGE;
+const platform = os.platform();
+const architecture = os.arch();
+const cpuModel = os.cpus()[0].model;
+const uptime = os.uptime();
+const nodejs = process.version;
+global.client.timeStart = new Date().getTime();
 
-module.exports = {
-  config: {
-    name: "upt",
-    version: "2.1.4",
-    hasPermission: 2,
-    credits: "𝐒𝐡𝐚𝐧𝐤𝐚𝐫 𝐒𝐢𝐧𝐠𝐡𝐚𝐧𝐢𝐲𝐚👑",
-    description: "Display bot system information!",
-    commandCategory: "System",
-    usages: "",
-    cooldowns: 5,
-    usePrefix: false,
-  },
-  run: async ({ api, event, Users }) => {
-    const ping = Date.now();
-    
-    async function getDependencyCount() {
-      try {
-        const packageJsonString = await fs.readFile('package.json', 'utf8');
-        const packageJson = JSON.parse(packageJsonString);
-        const depCount = Object.keys(packageJson.dependencies).length;
-        return depCount;
-      } catch (error) {
-        console.error('❎ Failed to read package.json:', error);
-        return -1;
-      }
-    }
-    
-    function getStatusByPing(pingReal) {
-      if (pingReal < 200) {
-        return 'smooth';
-      } else if (pingReal < 800) {
-        return 'average';
-      } else {
-        return 'laggy';
-      }
-    }
-    
-    function getPrimaryIP() {
-      const interfaces = os.networkInterfaces();
-      for (let iface of Object.values(interfaces)) {
-        for (let alias of iface) {
-          if (alias.family === 'IPv4' && !alias.internal) {
-            return alias.address;
-          }
-        }
-      }
-      return '127.0.0.1';
-    }
-    
-    const totalMemory = os.totalmem();
-    const freeMemory = os.freemem();
-    const usedMemory = totalMemory - freeMemory;
-    const uptime = process.uptime();
-    const uptimeHours = Math.floor(uptime / (60 * 60));
-    const uptimeMinutes = Math.floor((uptime % (60 * 60)) / 60);
-    const uptimeSeconds = Math.floor(uptime % 60);
-    let name = await Users.getNameUser(event.senderID);
-    const dependencyCount = await getDependencyCount();
-    const primaryIp = getPrimaryIP();
-    
-    try {
-      const disks = await nodeDiskInfo.getDiskInfo();
-      const firstDisk = disks[0] || {};
-      const usedSpace = firstDisk.blocks - firstDisk.available;
-      
-      function convertToGB(bytes) {
-        if (bytes === undefined) return 'N/A';
-        const GB = bytes / (1024 * 1024 * 1024);
-        return GB.toFixed(2) + 'GB';
-      }
-      
-      const pingReal = ping - event.timestamp;
-      const botStatus = getStatusByPing(pingReal);
-      
-      const replyMsg = `⏰ Current time: ${moment().tz('Asia/Kolkata').format('HH:mm:ss')} | ${moment().tz('Asia/Kolkata').format('DD/MM/YYYY')}
-⏱️ Uptime: ${uptimeHours.toString().padStart(2, '0')}:${uptimeMinutes.toString().padStart(2, '0')}:${uptimeSeconds.toString().padStart(2, '0')}
-📝 Default prefix: ${global.config.PREFIX}
-🗂️ Package count: ${dependencyCount >= 0 ? dependencyCount : "Unknown"}
-🔣 Bot status: ${botStatus}
-📋 OS: ${os.type()} ${os.release()} (${os.arch()})
-💾 CPU: ${os.cpus().length} core(s) - ${os.cpus()[0].model} @ ${Math.round(os.cpus()[0].speed)}MHz
-📊 RAM: ${(usedMemory / 1024 / 1024 / 1024).toFixed(2)}GB/${(totalMemory / 1024 / 1024 / 1024).toFixed(2)}GB (used)
-🛢️ Free RAM: ${(freeMemory / 1024 / 1024 / 1024).toFixed(2)}GB
-🗄️ Storage: ${convertToGB(firstDisk.used)}/${convertToGB(firstDisk.blocks)} (used)
-📑 Free storage: ${convertToGB(firstDisk.available)}
-🛜 Ping: ${pingReal}ms
-👤 Requested by: ${name}`.trim();
-      
-      api.sendMessage(replyMsg, event.threadID, event.messageID);
-    } catch (error) {
-      console.error('❎ Error getting disk information:', error.message);
-    }
+module.exports.config = {
+  name: "upt",
+  version: "1.0.1",
+  hasPermssion: 0,
+  credits: "SHAAN KHAN",
+  description: "Koii Prefix nhi",
+  commandCategory: "Hukum Ke Bagher",
+  usages: "Online Time Timing Dekhye",
+  cooldowns: 5
+};
+
+function byte2mb(bytes) {
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  let l = 0, n = parseInt(bytes, 10) || 0;
+  while (n >= 1024 && ++l) n = n / 1024;
+  return `${n.toFixed(n < 10 && l > 0 ? 1 : 0)} ${units[l]}`;
+}
+
+module.exports.handleEvent = async ({ api, event, Threads }) => {
+  const xuly = Math.floor((Date.now() - global.client.timeStart) / 4444);
+  const trinhtrang = xuly < 10 ? "  Acha ✔️" : xuly > 10 && xuly < 100 ? "Thir" : "Ammi";
+
+  if (!event.body) return;
+
+  const { threadID, messageID } = event;
+
+  if (event.body.toLowerCase().indexOf("upt") == 0) {
+    const time = process.uptime(),
+          gio = Math.floor(time / (60 * 60)),
+          phut = Math.floor((time % (60 * 60)) / 60),
+          giay = Math.floor(time % 60);
+
+    const currentDate = new Date();
+    const formattedTime = currentDate.toLocaleTimeString('en-US', { 
+      hour12: true, 
+      timeZone: 'Asia/kolkata' 
+    });
+    const formattedDate = currentDate.toLocaleDateString('en-GB', { 
+      timeZone: 'Asia/kolkata' 
+    });
+    const formattedDay = currentDate.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      timeZone: 'Asia/kolkata' 
+    });
+
+    const responseMessage = `❁ ━━━[ 𝗨𝗣𝗧𝗜𝗠𝗘 ]━━━ ❁\n\n` +
+                            `❁ 𝗥𝗨𝗡 ➪ ${gio}ʜ ${phut}ᴍ ${giay}ꜱ\n` +
+                            `❁ 𝗧𝗜𝗠𝗘 ➪ ${formattedTime}\n` +
+                            `❁ 𝗗𝗔𝗧𝗘 ➪ ${formattedDate}\n` +
+                            `❁ 𝗗𝗔𝗬 ➪ ${formattedDay}\n` +
+                            `❁ ━━━━━━━━━━━━━━━ ❁\n` +
+                            `𝐎𝐖𝐍𝐄𝐑 :- 💖🌸💐𝗞𝗥𝗜𝗦𝗛𝗡𝗔`;
+
+    api.sendMessage(responseMessage, event.threadID, event.messageID);
   }
 };
+
+module.exports.run = () => {};
